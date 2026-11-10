@@ -1,0 +1,26 @@
+{
+  "name": "stick-arena",
+  "version": "0.1.0",
+  "description": "Arcade first-person stickman shooter for the browser, built with Three.js and Vite.",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "scripts": {
+    "doctor": "node scripts/doctor.mjs",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node tests/smoke.mjs",
+    "test:dist": "vite build && node tests/smoke.mjs --dist"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0",
+    "vite": "^8.3.7"
+  }
+}

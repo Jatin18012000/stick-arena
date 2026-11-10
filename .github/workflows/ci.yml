@@ -1,0 +1,59 @@
+# Every push and pull request: build and run the end-to-end smoke test in
+# headless Chromium. Pushes to main then publish the build to GitHub Pages.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run doctor -- --build
+      - run: npm run test:dist
+
+  deploy:
+    needs: test
+    # Pages needs a one-time switch in Settings -> Pages (Source: GitHub
+    # Actions), and is unavailable for private repos on free plans, so only
+    # deploy from main of a public repository.
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && github.event.repository.visibility == 'public'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - id: deployment
+        uses: actions/deploy-pages@v4
